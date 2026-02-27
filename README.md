@@ -165,9 +165,22 @@ Reads `diagnostic_detectors_TRS.hdf5` and prints the mean tidal range and theore
 ```bash
 python GP_multiple.py
 ```
-For each detector site:
-1. Loads ensemble HDF5 outputs and computes mean tidal range per sample.
-2. Fits a **Gaussian Process** (Matérn ν=2.5 kernel, sklearn) to the (bath_error, R_mean) pairs.
-3. Plots the GP mean prediction with ±1σ uncertainty band against the scatter of ensemble samples.
+
+`GP_multiple.py` builds a GP surrogate that maps bathymetric error → mean tidal range across multiple detector sites simultaneously. It works as follows:
+
+**Input data loading**
+For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script reads the `diagnostic_detectors_TRS.hdf5` file from each ensemble member's output folder (`outputs/outputs_run/H=<value>/`). It extracts the time series of surface elevation and computes the **mean tidal range** using the peak-detection routines in `modules/functions.py` (high-water and low-water peaks are identified, tidal ranges computed between consecutive HW-LW pairs, and the mean taken over the full 15-day record).
+
+**GP regression (`gp_regression` function)**
+A `GaussianProcessRegressor` from scikit-learn is fitted with a **Matérn kernel** (length scale = 1.5, ν = 2.5). The ν=2.5 Matérn is twice differentiable, making it appropriate for smooth physical responses. The model is trained on the LHS ensemble points `(bath_error, R_mean)` and evaluated on a dense grid of 100 points spanning −3 m to +3 m of bathymetric error. A held-out test point at `bath_error = 0` (baseline, no perturbation, expected range ≈ 8.5 m) is used to compute a test Mean Squared Error and verify surrogate accuracy.
+
+**Output**
+For each detector, the script produces a plot showing:
+- Scatter points of the ensemble simulation results.
+- The GP mean prediction curve over the full input range.
+- A shaded ±1σ uncertainty band (light steel blue) reflecting GP posterior variance.
+- A dashed vertical line at `bath_error = 0` marking the unperturbed baseline.
+
+This allows direct visual assessment of how sensitive the tidal range at each location is to bathymetric uncertainty, and where the surrogate is confident vs. uncertain due to sparse training data.
 
 
