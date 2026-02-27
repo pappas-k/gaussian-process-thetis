@@ -170,10 +170,4 @@ For each detector site:
 2. Fits a **Gaussian Process** (Matérn ν=2.5 kernel, sklearn) to the (bath_error, R_mean) pairs.
 3. Plots the GP mean prediction with ±1σ uncertainty band against the scatter of ensemble samples.
 
----
 
-## Phase 10 — Contributors
-
-| Name | Role |
-|---|---|
-| [pappas-k](https://github.com/pappas-k) | Development and maintenance |
