@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Outputs and large generated files
+outputs/
+*.h5
+*.hdf5
+*.nc
+*.vtk
+*.pvd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
