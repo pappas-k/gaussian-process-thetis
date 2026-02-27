@@ -166,21 +166,36 @@ Reads `diagnostic_detectors_TRS.hdf5` and prints the mean tidal range and theore
 python GP_multiple.py
 ```
 
-`GP_multiple.py` builds a GP surrogate that maps bathymetric error → mean tidal range across multiple detector sites simultaneously. It works as follows:
+`GP_multiple.py` builds a GP surrogate for either the bathymetric or Manning ensemble. The active mode is selected by setting the `MODE` variable at the top of the script:
 
-**Input data loading**
-For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script reads the `diagnostic_detectors_TRS.hdf5` file from each ensemble member's output folder (`outputs/outputs_run/H=<value>/`). It extracts the time series of surface elevation and computes the **mean tidal range** using the peak-detection routines in `modules/functions.py` (high-water and low-water peaks are identified, tidal ranges computed between consecutive HW-LW pairs, and the mean taken over the full 15-day record).
+```python
+MODE = 'bathymetry'   # or 'manning'
+```
 
-**GP regression (`gp_regression` function)**
-A `GaussianProcessRegressor` from scikit-learn is fitted with a **Matérn kernel** (length scale = 1.5, ν = 2.5). The ν=2.5 Matérn is twice differentiable, making it appropriate for smooth physical responses. The model is trained on the LHS ensemble points `(bath_error, R_mean)` and evaluated on a dense grid of 100 points spanning −3 m to +3 m of bathymetric error. A held-out test point at `bath_error = 0` (baseline, no perturbation, expected range ≈ 8.5 m) is used to compute a test Mean Squared Error and verify surrogate accuracy.
+---
 
-**Output**
-For each detector, the script produces a plot showing:
+**Bathymetry mode (`MODE = 'bathymetry'`)**
+
+For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script reads `diagnostic_detectors_TRS.hdf5` from each ensemble member's output folder (`outputs/outputs_run/H=<value>/`). It computes the **mean tidal range** using the peak-detection routines in `modules/functions.py` (HW and LW peaks identified, ranges computed between consecutive pairs, mean taken over the full 15-day record). A GP is fitted to the `(bath_error, R_mean)` pairs for each detector and all results are overlaid on the same plot.
+
+---
+
+**Manning mode (`MODE = 'manning'`)**
+
+Reads `manning_results.txt` — the CSV produced by `run_manning_ensemble.sh` with columns `Manning, R_mean, E_mean` — and fits a GP to the `(manning, R_mean)` pairs for the SW detector. The baseline test point is set to the default Manning coefficient (`n = 0.024`).
+
+---
+
+**GP regression (shared)**
+
+Both modes use a `GaussianProcessRegressor` with a **Matérn kernel** (length scale = 1.5, ν = 2.5). The ν=2.5 Matérn is twice differentiable, appropriate for smooth physical responses. The surrogate is evaluated on a dense grid of 100 points spanning the input range, and a held-out test point is used to report test MSE.
+
+**Output (both modes)**
+
+Each plot shows:
 - Scatter points of the ensemble simulation results.
 - The GP mean prediction curve over the full input range.
 - A shaded ±1σ uncertainty band (light steel blue) reflecting GP posterior variance.
-- A dashed vertical line at `bath_error = 0` marking the unperturbed baseline.
-
-This allows direct visual assessment of how sensitive the tidal range at each location is to bathymetric uncertainty, and where the surrogate is confident vs. uncertain due to sparse training data.
+- A dashed vertical line marking the unperturbed baseline.
 
 
