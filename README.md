@@ -188,7 +188,7 @@ For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the s
 
 **Manning mode (`MODE = 'manning'`)**
 
-Reads `manning_results.txt` — the CSV produced by `run_manning_ensemble.sh` with columns `Manning, R_mean, E_mean` — and fits a GP to the `(manning, R_mean)` pairs for the SW detector. The baseline test point is set to the default Manning coefficient (`n = 0.024`).
+Reads `manning_results.txt` — the CSV produced by `run_manning_ensemble.sh` with columns `Manning, R_mean, E_mean`. Since the Manning ensemble overwrites the same output folder for each run, the R_mean and E_mean values are captured directly by the shell script rather than from separate HDF5 files. The script fits a GP to the `(manning, R_mean)` pairs for the SW detector. The baseline test point is set to the default Manning coefficient (`n = 0.024`), with the corresponding R_mean interpolated from the ensemble data. The GP is evaluated over the full range of sampled Manning values and the plot shows how mean tidal range at SW responds to friction uncertainty.
 
 ---
 
