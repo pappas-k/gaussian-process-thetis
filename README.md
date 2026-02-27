@@ -4,7 +4,7 @@ A 2D shallow-water tidal model of the West UK (Bristol Channel and Irish Sea) bu
 
 ---
 
-## Phase 1 — Overview
+## Overview
 
 This repository implements a workflow for assessing the sensitivity of tidal dynamics in the West UK to two key uncertain parameters:
 
@@ -15,7 +15,7 @@ For each parameter, a Latin Hypercube Sampling (LHS) ensemble of simulations is 
 
 ---
 
-## Phase 2 — Project Structure
+## Project Structure
 
 ```
 .
@@ -51,7 +51,7 @@ For each parameter, a Latin Hypercube Sampling (LHS) ensemble of simulations is 
 
 ---
 
-## Phase 3 — Dependencies
+## Dependencies
 
 The model requires a working [Firedrake](https://www.firedrakeproject.org/) installation with Thetis. Additional Python packages are needed for post-processing.
 
@@ -72,7 +72,7 @@ source ~/firedrake/bin/activate
 
 ---
 
-## Phase 4 — Configuration
+## Configuration
 
 All parameters are centralised in `inputs/simulation_parameters.py`. Key settings:
 
@@ -92,7 +92,7 @@ Paths to external data (bathymetry grids, TPXO forcing files, gauge CSV) are set
 
 ---
 
-## Phase 5 — Preprocessing
+## Preprocessing
 
 ```bash
 mpirun.mpich -np 1 python preprocessing.py
@@ -107,7 +107,7 @@ This script:
 
 ---
 
-## Phase 6 — Ramp (Spin-up) Simulation
+## Ramp (Spin-up) Simulation
 
 ```bash
 mpirun.mpich -np 6 python ramp.py
@@ -119,7 +119,7 @@ A 2-day spin-up run that starts from rest and ramps up tidal forcing. Uses the s
 
 ---
 
-## Phase 7 — Main Tidal Simulation
+## Main Tidal Simulation
 
 ```bash
 mpirun.mpich -np 6 python run.py
@@ -135,7 +135,7 @@ A 15-day tidal simulation initialised from the ramp state. Tidal boundary condit
 
 ---
 
-## Phase 8 — Ensemble Runs (UQ)
+## Ensemble Runs (UQ)
 
 Two ensemble drivers are provided, each reading LHS sample files and looping over simulations.
 
@@ -165,7 +165,7 @@ The final `manning_results.txt` is a CSV with columns `Manning, R_mean, E_mean` 
 
 ---
 
-## Phase 9 — Post-processing and GP Surrogate
+## Post-processing and GP Surrogate
 
 ### Scalar extraction
 ```bash
