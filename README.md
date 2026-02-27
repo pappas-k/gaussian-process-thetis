@@ -188,7 +188,7 @@ MODE = 'bathymetry'   # or 'manning'
 
 **Bathymetry mode (`MODE = 'bathymetry'`)**
 
-For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script reads `diagnostic_detectors_TRS.hdf5` from each ensemble member's output folder (`outputs/outputs_run/H=<value>/`). It computes the **mean tidal range** using the peak-detection routines in `modules/functions.py` (HW and LW peaks identified, ranges computed between consecutive pairs, mean taken over the full 15-day record). A GP is fitted to the `(bath_error, R_mean)` pairs for each detector and all results are overlaid on the same plot.
+For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script loops over all bathymetric error samples and reads `diagnostic_detectors_TRS.hdf5` from the corresponding output folder (`outputs/outputs_run/H=<value>/`). The elevation time series at the detector is extracted and passed to `functions.mean_tidal_range_and_theoretical_energy()`, which identifies HW and LW peaks, computes tidal ranges between consecutive pairs, and returns the mean over the full 15-day record. A separate GP is fitted to the `(bath_error, R_mean)` pairs for each detector, using a held-out test point at `bath_error = 0` (no perturbation, expected range ≈ 8.5 m) to report test MSE. All detectors are overlaid on the same plot, allowing direct comparison of spatial sensitivity across the domain.
 
 ---
 
