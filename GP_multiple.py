@@ -1,11 +1,15 @@
 """
-Post-processing script: fits a Gaussian Process surrogate to the ensemble results
-and plots mean tidal range vs. bathymetric error for all detector sites.
+Post-processing script: fits a Gaussian Process surrogate to ensemble results
+and plots mean tidal range vs. the uncertain parameter.
 
-Reads diagnostic HDF5 files from outputs/outputs_run/H=<value>/ for each
-bathymetric error sample, extracts mean tidal range, fits a GP (Matérn kernel),
-and plots the mean prediction with uncertainty band.
+Set MODE to select which ensemble to analyse:
+  'bathymetry' — reads HDF5 diagnostics from outputs/outputs_run/H=<value>/
+                 for each bathymetric error sample; supports multiple detectors.
+  'manning'    — reads manning_results.txt (CSV produced by run_manning_ensemble.sh)
+                 for each Manning coefficient sample; SW detector only.
 """
+import csv
+
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,6 +21,28 @@ from modules import functions
 plt.rc('font', family='serif', **{'serif': ['Helvetica'], 'size': 15})
 plt.rc('text', usetex=True)
 
+# ---------------------------------------------------------------------------
+# Configuration — set MODE to 'bathymetry' or 'manning'
+# ---------------------------------------------------------------------------
+MODE = 'bathymetry'
+
+# Bathymetry mode settings
+BATH_DETECTOR_NAMES = ['SW', 'CA', 'WA', 'CO', 'LI', 'BL', 'SO', 'Outer_Severn_Barrage']
+BATH_ERRORS = [
+     0.04,  0.06,  0.36,  0.63,  0.81,  0.87,  1.28,  1.34,  1.56,  1.59,
+     1.72,  2.02,  2.08,  2.11,  2.26,  2.34,  2.40,  2.48,  2.52,  2.59,  2.87,
+    -0.05, -0.39, -0.59, -1.17, -1.42, -1.69, -1.79, -1.81, -2.21, -2.23,
+    -2.31, -2.35, -2.48, -2.57, -2.74, -2.77,
+]
+
+# Manning mode settings
+MANNING_RESULTS_FILE = 'manning_results.txt'
+MANNING_BASELINE     = 0.024   # default Manning coefficient (used as test point)
+
+
+# ---------------------------------------------------------------------------
+# Shared GP regression
+# ---------------------------------------------------------------------------
 
 def gp_regression(x_train, y_train, X_test, y_test, x_values):
     """Fit a GP with a Matérn kernel and return mean and std predictions."""
@@ -33,15 +59,19 @@ def gp_regression(x_train, y_train, X_test, y_test, x_values):
     return mean_prediction, std_prediction
 
 
-def calculate_and_plot_mean_tidal_range_energy(detector_names, bath_errors):
+# ---------------------------------------------------------------------------
+# Bathymetry mode
+# ---------------------------------------------------------------------------
+
+def run_bathymetry_mode(detector_names, bath_errors):
     """
-    For each detector, load ensemble outputs, compute mean tidal range,
+    For each detector, load HDF5 ensemble outputs, compute mean tidal range,
     fit a GP surrogate, and plot results.
     """
     bath_errors_fmt = [f"{e:.2f}" for e in bath_errors]
 
-    x_test = np.array([[0.0]])     # baseline: no bathymetric error
-    y_test = np.array([8.5])       # approximate baseline tidal range
+    x_test   = np.array([[0.0]])   # baseline: no bathymetric error
+    y_test   = np.array([8.5])     # approximate baseline tidal range
     x_values = np.linspace(-3, 3, num=100)
     bath_error_values = np.array([float(e) for e in bath_errors]).reshape(-1, 1)
 
@@ -67,6 +97,9 @@ def calculate_and_plot_mean_tidal_range_energy(detector_names, bath_errors):
                          mean_prediction + std_prediction,
                          alpha=0.6, color='lightsteelblue')
 
+        print(f"Bathymetric errors: {bath_errors}")
+        print(f"Mean Tidal Ranges for {detector_name}: {R_means}")
+
     plt.axvline(x=0.0, color='navy', linestyle='--', label=r'Baseline $\Delta h=0$')
     plt.xlabel(r'Bathymetric error $\Delta h$ (m)')
     plt.ylabel(r'Mean Tidal Range $\overline{R}$ (m)')
@@ -75,18 +108,63 @@ def calculate_and_plot_mean_tidal_range_energy(detector_names, bath_errors):
     plt.ylim(5, 10.8)
     plt.show()
 
-    print("Bathymetric errors:", bath_errors)
-    for detector_name in detector_names:
-        print(f"Mean Tidal Ranges for {detector_name}:", R_means)
+
+# ---------------------------------------------------------------------------
+# Manning mode
+# ---------------------------------------------------------------------------
+
+def run_manning_mode(results_file, baseline):
+    """
+    Load Manning ensemble results from CSV, fit a GP surrogate, and plot results.
+    Expects a CSV with columns: Manning, R_mean, E_mean
+    (as produced by run_manning_ensemble.sh).
+    """
+    manning_vals, R_means = [], []
+    with open(results_file, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            manning_vals.append(float(row['Manning']))
+            R_means.append(float(row['R_mean']))
+
+    manning_vals = np.array(manning_vals)
+    R_means      = np.array(R_means)
+
+    x_test   = np.array([[baseline]])
+    y_test   = np.array([np.interp(baseline, np.sort(manning_vals),
+                                   R_means[np.argsort(manning_vals)])])
+    x_values = np.linspace(manning_vals.min(), manning_vals.max(), num=100)
+
+    mean_prediction, std_prediction = gp_regression(
+        manning_vals.reshape(-1, 1), R_means, x_test, y_test, x_values
+    )
+
+    plt.scatter(manning_vals, R_means, marker='o', s=40,
+                label='SW', edgecolors='black', zorder=2)
+    plt.plot(x_values, mean_prediction, '-', zorder=1)
+    plt.fill_between(x_values,
+                     mean_prediction - std_prediction,
+                     mean_prediction + std_prediction,
+                     alpha=0.6, color='lightsteelblue')
+
+    plt.axvline(x=baseline, color='navy', linestyle='--',
+                label=rf'Baseline $n={baseline}$')
+    plt.xlabel(r'Manning coefficient $n$')
+    plt.ylabel(r'Mean Tidal Range $\overline{R}$ (m)')
+    plt.title('Mean Tidal Range vs. Manning Uncertainty')
+    plt.legend(fontsize=10)
+    plt.show()
+
+    print(f"Manning values: {manning_vals.tolist()}")
+    print(f"Mean Tidal Ranges (SW): {R_means.tolist()}")
 
 
-detector_names = ['SW', 'CA', 'WA', 'CO', 'LI', 'BL', 'SO', 'Outer_Severn_Barrage']
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
-bath_errors = [
-     0.04,  0.06,  0.36,  0.63,  0.81,  0.87,  1.28,  1.34,  1.56,  1.59,
-     1.72,  2.02,  2.08,  2.11,  2.26,  2.34,  2.40,  2.48,  2.52,  2.59,  2.87,
-    -0.05, -0.39, -0.59, -1.17, -1.42, -1.69, -1.79, -1.81, -2.21, -2.23,
-    -2.31, -2.35, -2.48, -2.57, -2.74, -2.77,
-]
-
-calculate_and_plot_mean_tidal_range_energy(detector_names, bath_errors)
+if MODE == 'bathymetry':
+    run_bathymetry_mode(BATH_DETECTOR_NAMES, BATH_ERRORS)
+elif MODE == 'manning':
+    run_manning_mode(MANNING_RESULTS_FILE, MANNING_BASELINE)
+else:
+    raise ValueError(f"Unknown MODE '{MODE}'. Choose 'bathymetry' or 'manning'.")
