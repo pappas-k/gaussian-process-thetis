@@ -149,7 +149,13 @@ Reads `inputs/bath_samples_LHS.txt`. For each sample, patches `simulation_parame
 ```bash
 bash run_manning_ensemble.sh
 ```
-Reads `inputs/manning_samples_LHS.txt`. For each sample, runs preprocessing → run (no new ramp) and appends `(manning, R_mean, E_mean)` to `manning_results.txt`.
+Reads `inputs/manning_samples_LHS.txt` (LHS samples of the background Manning coefficient). For each sample:
+1. Patches `manning_bkg` in `simulation_parameters.py`.
+2. Runs `preprocessing.py` → `run.py` (no new ramp — the existing ramp state is reused since bathymetry is unchanged).
+3. Calls `calculate_tidal_range_and_energy.py` to extract mean tidal range and theoretical energy at the SW detector.
+4. Appends `(manning, R_mean, E_mean)` to `manning_results.txt`.
+
+The final `manning_results.txt` is a CSV with columns `Manning, R_mean, E_mean` and is the direct input to `GP_multiple.py` in Manning mode.
 
 ---
 
