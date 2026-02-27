@@ -143,7 +143,13 @@ Two ensemble drivers are provided, each reading LHS sample files and looping ove
 ```bash
 bash run_bathymetry_ensemble.sh
 ```
-Reads `inputs/bath_samples_LHS.txt`. For each sample, patches `simulation_parameters.py` and runs the full preprocessing → ramp → run pipeline. Output goes to `outputs/outputs_run/H=<value>/`.
+Reads `inputs/bath_samples_LHS.txt` (LHS samples of the uniform bathymetric perturbation). For each sample:
+1. Patches `bath_error` and `run_output_folder` in `simulation_parameters.py`.
+2. Runs the full `preprocessing.py` → `ramp.py` → `run.py` pipeline (a new ramp is required for each sample since the bathymetry changes).
+3. Saves `diagnostic_detectors_TRS.hdf5` to a dedicated output folder `outputs/outputs_run/H=<value>/`.
+4. Logs the wall-clock time taken per sample.
+
+Each ensemble member produces its own HDF5 diagnostic file, which is later read by `GP_multiple.py` in bathymetry mode to extract mean tidal range at all detector sites.
 
 ### Manning uncertainty
 ```bash
