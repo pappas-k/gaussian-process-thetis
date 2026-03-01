@@ -4,10 +4,17 @@
 # For each sample: updates simulation_parameters.py, runs preprocessing -> run,
 # then extracts R_mean and E_mean and appends to manning_results.txt.
 
+set -euo pipefail
+
 source ~/firedrake/bin/activate
 
 samples_file="inputs/manning_samples_LHS.txt"
 output_file="manning_results.txt"
+
+if [[ ! -f "$samples_file" ]]; then
+    echo "ERROR: samples file not found: $samples_file" >&2
+    exit 1
+fi
 
 echo "Manning,R_mean,E_mean" > "$output_file"
 
