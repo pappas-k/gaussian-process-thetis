@@ -100,7 +100,7 @@ mpirun.mpich -np 1 python preprocessing.py
 
 This script:
 1. Loads the mesh from the `.msh` file.
-2. Interpolates bathymetry from multiple sources (DigiMap 1 arc-sec + GEBCO), applying the configured `bath_error` perturbation and LAT correction.
+2. Interpolates bathymetry from multiple sources (DigiMap 1 arc-sec + GEBCO), applying the configured `bath_error` perturbation and LAT correction. A `RuntimeError` is raised immediately if no bathymetry source produces a valid field.
 3. Solves the Eikonal equation to compute distance fields from boundaries, used to construct the **horizontal viscosity sponge**.
 4. Builds the **Manning friction field**, optionally reading bed-classification data or applying Gaussian patches (e.g. Cardigan Bay).
 5. Saves all fields (mesh, bathymetry, viscosity, Manning) to `inputs/preprocessing.h5`.
@@ -137,16 +137,16 @@ A 15-day tidal simulation initialised from the ramp state. Tidal boundary condit
 
 ## Ensemble Runs (UQ)
 
-Two ensemble drivers are provided, each reading LHS sample files and looping over simulations.
+Two ensemble drivers are provided, each reading LHS sample files and looping over simulations. Both scripts use `set -euo pipefail` so any failed pipeline step (preprocessing, ramp, or run) immediately aborts the ensemble with a non-zero exit code rather than silently continuing to the next sample.
 
 ### Bathymetric uncertainty
 ```bash
 bash run_bathymetry_ensemble.sh
 ```
-Reads `inputs/bath_samples_LHS.txt` (LHS samples of the uniform bathymetric perturbation). For each sample:
-1. Patches `bath_error` and `run_output_folder` in `simulation_parameters.py`.
-2. Runs the full `preprocessing.py` → `ramp.py` → `run.py` pipeline (a new ramp is required for each sample since the bathymetry changes).
-3. Saves `diagnostic_detectors_TRS.hdf5` to a dedicated output folder `outputs/outputs_run/H=<value>/`.
+Reads `inputs/bath_samples_LHS.txt` (LHS samples of the uniform bathymetric perturbation). The script validates that this file exists before starting. For each sample:
+1. Creates the per-sample output directory (`outputs/outputs_run/H=<value>/`).
+2. Patches `bath_error` and `run_output_folder` in `simulation_parameters.py`.
+3. Runs the full `preprocessing.py` → `ramp.py` → `run.py` pipeline (a new ramp is required for each sample since the bathymetry changes).
 4. Logs the wall-clock time taken per sample.
 
 Each ensemble member produces its own HDF5 diagnostic file, which is later read by `GP_multiple.py` in bathymetry mode to extract mean tidal range at all detector sites.
@@ -155,7 +155,7 @@ Each ensemble member produces its own HDF5 diagnostic file, which is later read 
 ```bash
 bash run_manning_ensemble.sh
 ```
-Reads `inputs/manning_samples_LHS.txt` (LHS samples of the background Manning coefficient). For each sample:
+Reads `inputs/manning_samples_LHS.txt` (LHS samples of the background Manning coefficient). The script validates that this file exists before starting. For each sample:
 1. Patches `manning_bkg` in `simulation_parameters.py`.
 2. Runs `preprocessing.py` → `run.py` (no new ramp — the existing ramp state is reused since bathymetry is unchanged).
 3. Calls `calculate_tidal_range_and_energy.py` to extract mean tidal range and theoretical energy at the SW detector.
@@ -175,26 +175,22 @@ Reads `diagnostic_detectors_TRS.hdf5` and prints the mean tidal range and theore
 
 ### GP surrogate fitting
 ```bash
-python GP_multiple.py
+python GP_multiple.py --mode bathymetry   # or --mode manning
 ```
 
-`GP_multiple.py` builds a GP surrogate for either the bathymetric or Manning ensemble. The active mode is selected by setting the `MODE` variable at the top of the script:
-
-```python
-MODE = 'bathymetry'   # or 'manning'
-```
+`GP_multiple.py` builds a GP surrogate for either the bathymetric or Manning ensemble. The mode is selected via the `--mode` command-line argument (default: `bathymetry`).
 
 ---
 
-**Bathymetry mode (`MODE = 'bathymetry'`)**
+**Bathymetry mode (`--mode bathymetry`)**
 
-For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script loops over all bathymetric error samples and reads `diagnostic_detectors_TRS.hdf5` from the corresponding output folder (`outputs/outputs_run/H=<value>/`). The elevation time series at the detector is extracted and passed to `functions.mean_tidal_range_and_theoretical_energy()`, which identifies HW and LW peaks, computes tidal ranges between consecutive pairs, and returns the mean over the full 15-day record. A separate GP is fitted to the `(bath_error, R_mean)` pairs for each detector, using a held-out test point at `bath_error = 0` (no perturbation, expected range ≈ 8.5 m) to report test MSE. All detectors are overlaid on the same plot, allowing direct comparison of spatial sensitivity across the domain.
+For each detector site (SW, CA, WA, CO, LI, BL, SO, Outer Severn Barrage), the script loops over all bathymetric error samples and reads `diagnostic_detectors_TRS.hdf5` from the corresponding output folder (`outputs/outputs_run/H=<value>/`). Any missing HDF5 file produces a warning and skips that detector rather than aborting. The elevation time series at the detector is extracted and passed to `functions.mean_tidal_range_and_theoretical_energy()`, which identifies HW and LW peaks, computes tidal ranges between consecutive pairs, and returns the mean over the full 15-day record. A separate GP is fitted to the `(bath_error, R_mean)` pairs for each detector. The baseline test point is set at `bath_error = 0`, with the corresponding R_mean interpolated from the ensemble data. All detectors are overlaid on the same plot, allowing direct comparison of spatial sensitivity across the domain.
 
 ---
 
-**Manning mode (`MODE = 'manning'`)**
+**Manning mode (`--mode manning`)**
 
-Reads `manning_results.txt` — the CSV produced by `run_manning_ensemble.sh` with columns `Manning, R_mean, E_mean`. Since the Manning ensemble overwrites the same output folder for each run, the R_mean and E_mean values are captured directly by the shell script rather than from separate HDF5 files. The script fits a GP to the `(manning, R_mean)` pairs for the SW detector. The baseline test point is set to the default Manning coefficient (`n = 0.024`), with the corresponding R_mean interpolated from the ensemble data. The GP is evaluated over the full range of sampled Manning values and the plot shows how mean tidal range at SW responds to friction uncertainty.
+Reads `manning_results.txt` — the CSV produced by `run_manning_ensemble.sh` with columns `Manning, R_mean, E_mean`. The script exits with an error if the file is not found. It fits a GP to the `(manning, R_mean)` pairs for the SW detector. The baseline test point is set to the default Manning coefficient (`n = 0.024`), with the corresponding R_mean interpolated from the ensemble data. The GP is evaluated over the full range of sampled Manning values and the plot shows how mean tidal range at SW responds to friction uncertainty.
 
 ---
 
