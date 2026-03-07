@@ -192,11 +192,8 @@ def main():
             PETSc.Sys.Print("Exporting elevation field for harmonic analysis")
             # Project DG elevation onto CG space for cleaner interpolation
             elev_CG = Function(CG_2d, name='elev_CG').project(elev)
-            checkpoint_file = checkpointing.DumbCheckpoint(
-                os.path.join(outputdir, f'elev_{t}')
-            )
-            checkpoint_file.store(elev_CG)
-            checkpoint_file.close()
+            with CheckpointFile(os.path.join(outputdir, f'elev_{t}.h5'), 'w') as cf:
+                cf.save_function(elev_CG)
 
         # At the end of the ramp, save the full model state so that run.py
         # can hot-start the main simulation from a spun-up initial condition.
