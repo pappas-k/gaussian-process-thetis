@@ -10,11 +10,11 @@ from modules import functions
 
 diagnostic_file = 'outputs/outputs_run/diagnostic_detectors_TRS.hdf5'
 
-df = h5py.File(diagnostic_file, 'r')
-t = df['time']
-data = df['SW']
+with h5py.File(diagnostic_file, 'r') as df:
+    t = df['time'][:]
+    data = df['SW'][:, 0]
 
-signal = np.column_stack((t[:], data[:, 0]))
+signal = np.column_stack((t, data))
 
 R_mean, E_mean = functions.mean_tidal_range_and_theoretical_energy(signal)
 
