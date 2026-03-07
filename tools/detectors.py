@@ -16,9 +16,8 @@ LL_WGS84 = pyproj.Proj(proj='latlong', datum='WGS84', errcheck=True)
 
 
 def get_detectors(mesh2d, maximum_distance=max_dist, gauge_file=tidegauge_file):
-    if gauge_file==tidegauge_file:
-        gauge_names = np.loadtxt(gauge_file, skiprows=1, usecols=(0,), dtype=str, delimiter=',')
-        gauge_xy = np.loadtxt(gauge_file, skiprows=1, usecols=(3,4), delimiter=',')
+    gauge_names = np.loadtxt(gauge_file, skiprows=1, usecols=(0,), dtype=str, delimiter=',')
+    gauge_xy = np.loadtxt(gauge_file, skiprows=1, usecols=(3,4), delimiter=',')
 
     ind = np.argsort(gauge_names)
     gauge_names = list(gauge_names[ind])
