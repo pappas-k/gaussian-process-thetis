@@ -77,11 +77,11 @@ def main():
     # absorbs reflected waves near artificial boundaries.
     PETSc.Sys.Print("Computing distance fields for viscosity sponge")
     u  = field_tools.eik(V, inputs.open_bnd,
-                         outfilename=os.path.join(outputdir, "dist.pvd"))
+                         outfilename=os.path.join(outputdir, "dist_open.pvd"))
     ue = field_tools.eik(V, 100,
-                         outfilename=os.path.join(outputdir, "dist.pvd"))
+                         outfilename=os.path.join(outputdir, "dist_east.pvd"))
     ui = field_tools.eik(V, 101,
-                         outfilename=os.path.join(outputdir, "dist.pvd"))
+                         outfilename=os.path.join(outputdir, "dist_island.pvd"))
 
     # Sponge: background viscosity is 1 Pa·s throughout the domain.
     # Within 20 km of the open boundary it ramps up linearly to 1000 Pa·s
