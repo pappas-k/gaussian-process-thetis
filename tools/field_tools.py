@@ -82,13 +82,13 @@ def gaussian_hump(fnsp, x, y, x0, y0, ang, peak, sd1, sd2, base=0, r1=None, r2=N
     assert sd1 > 0 and sd2 > 0, f"Negative value not allowed among {sd1} {sd2}."
     assert base < peak, f"Base level must be lower than peak."
     field = Function(fnsp).assign(0.)
-    if ang == 0 and sd2 == np.Inf:  # ridge along y-direction
+    if ang == 0 and sd2 == np.inf:  # ridge along y-direction
         scale = (peak - base) * (sd1 * sqrt(2*np.pi))
         spread = sd1 * sqrt(2*np.pi)
         norm = exp(-0.5*(((x - x0) / sd1)**2))
         field.interpolate(base + scale * norm / spread)
         field.interpolate(conditional(And(ge(y, y0-r2), le(y, y0+r2)), field, base) )
-    elif ang == 90 and sd1 == np.Inf:  # ridge along x-direction
+    elif ang == 90 and sd1 == np.inf:  # ridge along x-direction
         scale = (peak - base) * (sd2 * sqrt(2*np.pi))
         spread = sd2 * sqrt(2*np.pi)
         norm = exp(-0.5*(((y - y0) / sd2)**2))
