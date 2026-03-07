@@ -207,14 +207,14 @@ def run_model():
             # Project from the DG solution space to CG1 to produce a
             # continuous field suitable for harmonic constituent fitting.
             elev_CG = Function(P1_2d, name='elev_CG').project(elev)
-            with CheckpointFile(os.path.join(outputdir, f"elev_{t:07d}"), "w") as cf:
+            with CheckpointFile(os.path.join(outputdir, f"elev_{t:07d}.h5"), "w") as cf:
                 cf.save_function(elev_CG)
 
         # At the end of the segment, save the full model state.
         # This checkpoint enables a subsequent segment (identifier=1, 2, …)
         # to hot-start without repeating the spin-up.
         if t == t_end:
-            with CheckpointFile(os.path.join(inputdir, "run_export"), 'w') as f:
+            with CheckpointFile(os.path.join(inputdir, "run_export.h5"), 'w') as f:
                 f.save_mesh(mesh2d)
                 f.save_function(bathymetry_2d, name="bathymetry")
                 f.save_function(h_viscosity,   name="viscosity")
