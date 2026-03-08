@@ -1,8 +1,14 @@
 """
 Post-processing script: calculates mean tidal range and theoretical energy
-at the SW detector from the model diagnostic output.
+at a detector site from the model diagnostic HDF5 output.
 
-Prints: R_mean E_mean  (used by the ensemble shell scripts to capture results)
+Usage
+-----
+    python calculate_tidal_range_and_energy.py
+    python calculate_tidal_range_and_energy.py --file path/to/diagnostic.hdf5
+    python calculate_tidal_range_and_energy.py --detector CA
+
+Prints: R_mean (m)  E_mean (MWh)  — captured by the ensemble shell scripts.
 """
 import argparse
 import os
