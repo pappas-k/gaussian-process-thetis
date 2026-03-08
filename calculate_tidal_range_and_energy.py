@@ -20,6 +20,9 @@ def load_signal(diagnostic_file, detector):
         print(f"ERROR: diagnostic file not found: {diagnostic_file}", file=sys.stderr)
         sys.exit(1)
     with h5py.File(diagnostic_file, 'r') as df:
+        if detector not in df:
+            print(f"ERROR: detector '{detector}' not found in {diagnostic_file}", file=sys.stderr)
+            sys.exit(1)
         t    = df['time'][:]
         elev = df[detector][:, 0]
     return np.column_stack((t, elev))
