@@ -8,9 +8,9 @@ import h5py
 import numpy as np
 from modules import functions
 
-diagnostic_file = 'outputs/outputs_run/diagnostic_detectors_TRS.hdf5'
+DEFAULT_DIAGNOSTIC_FILE = 'outputs/outputs_run/diagnostic_detectors_TRS.hdf5'
 
-with h5py.File(diagnostic_file, 'r') as df:
+with h5py.File(DEFAULT_DIAGNOSTIC_FILE, 'r') as df:
     t = df['time'][:]
     data = df['SW'][:, 0]
 
