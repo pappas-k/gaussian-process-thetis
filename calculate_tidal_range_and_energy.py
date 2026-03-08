@@ -4,6 +4,9 @@ at the SW detector from the model diagnostic output.
 
 Prints: R_mean E_mean  (used by the ensemble shell scripts to capture results)
 """
+import os
+import sys
+
 import h5py
 import numpy as np
 from modules import functions
@@ -13,6 +16,9 @@ DEFAULT_DETECTOR        = 'SW'
 
 
 def load_signal(diagnostic_file, detector):
+    if not os.path.isfile(diagnostic_file):
+        print(f"ERROR: diagnostic file not found: {diagnostic_file}", file=sys.stderr)
+        sys.exit(1)
     with h5py.File(diagnostic_file, 'r') as df:
         t    = df['time'][:]
         elev = df[detector][:, 0]
