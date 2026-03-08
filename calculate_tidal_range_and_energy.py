@@ -24,6 +24,10 @@ def parse_args():
         '--file', default=DEFAULT_DIAGNOSTIC_FILE,
         help="Path to the HDF5 diagnostic file (default: %(default)s).",
     )
+    parser.add_argument(
+        '--detector', default=DEFAULT_DETECTOR,
+        help="Detector name to read from the HDF5 file (default: %(default)s).",
+    )
     return parser.parse_args()
 
 
