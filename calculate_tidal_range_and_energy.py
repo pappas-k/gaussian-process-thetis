@@ -4,6 +4,7 @@ at the SW detector from the model diagnostic output.
 
 Prints: R_mean E_mean  (used by the ensemble shell scripts to capture results)
 """
+import argparse
 import os
 import sys
 
@@ -13,6 +14,17 @@ from modules import functions
 
 DEFAULT_DIAGNOSTIC_FILE = 'outputs/outputs_run/diagnostic_detectors_TRS.hdf5'
 DEFAULT_DETECTOR        = 'SW'
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Compute mean tidal range and theoretical energy from detector output.",
+    )
+    parser.add_argument(
+        '--file', default=DEFAULT_DIAGNOSTIC_FILE,
+        help="Path to the HDF5 diagnostic file (default: %(default)s).",
+    )
+    return parser.parse_args()
 
 
 def load_signal(diagnostic_file, detector):
