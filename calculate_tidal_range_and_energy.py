@@ -9,10 +9,11 @@ import numpy as np
 from modules import functions
 
 DEFAULT_DIAGNOSTIC_FILE = 'outputs/outputs_run/diagnostic_detectors_TRS.hdf5'
+DEFAULT_DETECTOR        = 'SW'
 
 with h5py.File(DEFAULT_DIAGNOSTIC_FILE, 'r') as df:
     t = df['time'][:]
-    data = df['SW'][:, 0]
+    data = df[DEFAULT_DETECTOR][:, 0]
 
 signal = np.column_stack((t, data))
 
