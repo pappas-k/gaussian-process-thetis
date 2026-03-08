@@ -49,3 +49,7 @@ def main():
     signal = load_signal(args.file, args.detector)
     R_mean, E_mean = functions.mean_tidal_range_and_theoretical_energy(signal)
     print(f"{R_mean:.3f} {E_mean:.3f}")
+
+
+if __name__ == '__main__':
+    main()
