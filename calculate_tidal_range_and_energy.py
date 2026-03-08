@@ -44,8 +44,8 @@ def load_signal(diagnostic_file, detector):
     return np.column_stack((t, elev))
 
 
-signal = load_signal(DEFAULT_DIAGNOSTIC_FILE, DEFAULT_DETECTOR)
-
-R_mean, E_mean = functions.mean_tidal_range_and_theoretical_energy(signal)
-
-print(f"{R_mean:.3f} {E_mean:.3f}")
+def main():
+    args = parse_args()
+    signal = load_signal(args.file, args.detector)
+    R_mean, E_mean = functions.mean_tidal_range_and_theoretical_energy(signal)
+    print(f"{R_mean:.3f} {E_mean:.3f}")
