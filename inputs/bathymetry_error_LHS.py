@@ -1,7 +1,7 @@
 import numpy as np
 from pyDOE import lhs
 
-# Define the range for Manning values
+# Define the range for Bathymetric error values
 bath_error_min = -3.00
 bath_error_max = +3.00
 
@@ -21,10 +21,10 @@ bath_error_samples_formatted = [float(format(error, '.2f')) for error in bath_er
 print("Latin Hypercube Sampling for Bathymetric values:")
 print(bath_error_samples_formatted)
 
-# Write Manning values to a text file
+# Write bathymetric error values to a text file
 output_file = "bath_samples_LHS.txt"
 with open(output_file, "w") as f:
-    for manning in bath_error_samples_formatted:
-        f.write(f"{manning}\n")
+    for error in bath_error_samples_formatted:
+        f.write(f"{error}\n")
 
-print(f"Manning values extracted and saved to '{output_file}'")
+print(f"Bathymetric error values extracted and saved to '{output_file}'")
