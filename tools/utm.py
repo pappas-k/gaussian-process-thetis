@@ -14,7 +14,8 @@ E_P2 = E / (1.0 - E)
 
 SQRT_E = math.sqrt(1 - E)
 _E = (1 - SQRT_E) / (1 + SQRT_E)
-_E3 = _E * _E * _E
+_E2 = _E * _E
+_E3 = _E2 * _E
 _E4 = _E3 * _E
 
 M1 = (1 - E / 4 - 3 * E2 / 64 - 5 * E3 / 256)
@@ -23,7 +24,7 @@ M3 = (15 * E2 / 256 + 45 * E3 / 1024)
 M4 = (35 * E3 / 3072)
 
 P2 = (3 * _E / 2 - 27 * _E3 / 32)
-P3 = (21 * _E3 / 16 - 55 * _E4 / 32)
+P3 = (21 * _E2 / 16 - 55 * _E4 / 32)
 P4 = (151 * _E3 / 96)
 
 R = 6378137
@@ -86,8 +87,8 @@ def to_latlon(easting, northing, zone_number, zone_letter):
 
     latitude = (p_rad - (p_tan / r) *
                 (d2 / 2 -
-                 d4 / 24 * (5 + 3 * p_tan2 + 10 * c - 4 * c2 - 9 * E_P2)) +
-                 d6 / 720 * (61 + 90 * p_tan2 + 298 * c + 45 * p_tan4 - 252 * E_P2 - 3 * c2))
+                 d4 / 24 * (5 + 3 * p_tan2 + 10 * c - 4 * c2 - 9 * E_P2) +
+                 d6 / 720 * (61 + 90 * p_tan2 + 298 * c + 45 * p_tan4 - 252 * E_P2 - 3 * c2)))
 
     longitude = (d -
                  d3 / 6 * (1 + 2 * p_tan2 + c) +
