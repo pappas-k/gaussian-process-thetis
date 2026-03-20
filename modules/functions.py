@@ -204,11 +204,12 @@ def tidal_ranges_from_peaks(peak_real_times_HW, peak_real_times_LW,
             tidal_ranges_from_HW = peak_elevs_HW[:-1] - peak_elevs_LW
             tidal_ranges_from_LW = abs(peak_elevs_LW[:] - peak_elevs_HW[1:])
         tidal_ranges_all, rel_times_all = [], []
-        for i in range(len(tidal_ranges_from_LW)):
+        for i in range(len(tidal_ranges_from_HW)):
             tidal_ranges_all.append(tidal_ranges_from_HW[i])
-            tidal_ranges_all.append(tidal_ranges_from_LW[i])
             rel_times_all.append(peak_real_times_HW[i])
-            rel_times_all.append(peak_real_times_LW[i])
+            if i < len(tidal_ranges_from_LW):
+                tidal_ranges_all.append(tidal_ranges_from_LW[i])
+                rel_times_all.append(peak_real_times_LW[i])
     else:
         # LW occurs first
         try:
@@ -218,11 +219,12 @@ def tidal_ranges_from_peaks(peak_real_times_HW, peak_real_times_LW,
             tidal_ranges_from_LW = abs(peak_elevs_LW[:-1] - peak_elevs_HW[:])
             tidal_ranges_from_HW = peak_elevs_HW[:] - peak_elevs_LW[1:]
         tidal_ranges_all, rel_times_all = [], []
-        for i in range(len(tidal_ranges_from_HW)):
+        for i in range(len(tidal_ranges_from_LW)):
             tidal_ranges_all.append(tidal_ranges_from_LW[i])
-            tidal_ranges_all.append(tidal_ranges_from_HW[i])
             rel_times_all.append(peak_real_times_LW[i])
-            rel_times_all.append(peak_real_times_HW[i])
+            if i < len(tidal_ranges_from_HW):
+                tidal_ranges_all.append(tidal_ranges_from_HW[i])
+                rel_times_all.append(peak_real_times_HW[i])
 
     return tidal_ranges_all, rel_times_all
 
