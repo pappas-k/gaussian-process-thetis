@@ -264,7 +264,7 @@ def theoretical_energy(signal):
         peak_rel_times_HW, peak_rel_times_LW, peak_elevs_HW, peak_elevs_LW
     )
 
-    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6
+    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
     return np.sum(emax)
 
 
@@ -294,8 +294,8 @@ def mean_tidal_range_and_theoretical_energy(signal):
         peak_rel_times_HW, peak_rel_times_LW, peak_elevs_HW, peak_elevs_LW
     )
 
-    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6  # kWh per tidal cycle
-    E = np.sum(emax) / 1e6  # MWh
+    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
+    E = np.sum(emax) / 1e3  # MWh/m²
     R = np.mean(tidal_ranges)
 
     return R, E
