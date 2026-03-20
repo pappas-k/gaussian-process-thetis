@@ -197,13 +197,13 @@ def run_bathymetry_mode(detector_names, bath_errors):
         plt.scatter(bath_errors, R_means, marker='o', s=40,
                     label=detector_name.replace('_', ' '),
                     edgecolors='black', zorder=2)
-        # GP posterior mean curve
-        plt.plot(x_values, mean_prediction, '-', zorder=1)
-        # ±1σ confidence band around the posterior mean
+        # GP posterior mean curve — capture colour so the band matches
+        line, = plt.plot(x_values, mean_prediction, '-', zorder=1)
+        # ±1σ confidence band, same colour as the corresponding mean curve
         plt.fill_between(x_values,
                          mean_prediction - std_prediction,
                          mean_prediction + std_prediction,
-                         alpha=0.6, color='lightsteelblue')
+                         alpha=0.3, color=line.get_color())
 
         print(f"Bathymetric errors: {bath_errors}")
         print(f"Mean Tidal Ranges for {detector_name}: {R_means}")
@@ -266,13 +266,13 @@ def run_manning_mode(results_file, baseline):
     # Scatter plot of training data (one point per ensemble member)
     plt.scatter(manning_vals, R_means, marker='o', s=40,
                 label='SW', edgecolors='black', zorder=2)
-    # GP posterior mean curve
-    plt.plot(x_values, mean_prediction, '-', zorder=1)
-    # ±1σ uncertainty band
+    # GP posterior mean curve — capture colour so the band matches
+    line, = plt.plot(x_values, mean_prediction, '-', zorder=1)
+    # ±1σ uncertainty band, same colour as the mean curve
     plt.fill_between(x_values,
                      mean_prediction - std_prediction,
                      mean_prediction + std_prediction,
-                     alpha=0.6, color='lightsteelblue')
+                     alpha=0.3, color=line.get_color())
 
     # Vertical dashed line at the calibrated baseline Manning coefficient
     plt.axvline(x=baseline, color='navy', linestyle='--',
