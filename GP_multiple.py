@@ -103,7 +103,7 @@ def gp_regression(x_train, y_train, x_test, y_test, x_values):
     kernel = Matern(length_scale=1.5, nu=2.5)
 
     # random_state=0 ensures reproducible kernel hyper-parameter optimisation
-    gp_model = GaussianProcessRegressor(kernel=kernel, alpha=0.0, random_state=0)
+    gp_model = GaussianProcessRegressor(kernel=kernel, alpha=1e-8, random_state=0)
     gp_model.fit(x_train, y_train)
 
     # Predict posterior mean and std on the dense grid for plotting
