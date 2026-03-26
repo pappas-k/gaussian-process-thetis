@@ -17,9 +17,6 @@ tnci = uptide.tidal_netcdf.OTPSncTidalInterpolator(tide,grid_forcing_file,hf_for
                                                    ranges=range_forcing_coords)
 
 def get_lowest_astronomical_tide(elev):
-  amp = numpy.sqrt(tnci.real_part**2 + tnci.imag_part**2)
-  val = amp.sum(axis=0)
-  tnci.interpolator = uptide.netcdf_reader.Interpolator(tnci.nci.origin, tnci.nci.delta, val, tnci.nci.mask)
   mesh2d = elev.function_space().mesh()
   xvector = mesh2d.coordinates.dat.data
   evector = elev.dat.data
