@@ -11,10 +11,10 @@ num_samples = 100  # Adjust this as needed
 # Generate Latin Hypercube Sampling
 lhs_samples = lhs(1, samples=num_samples, criterion='maximin')
 
-# Map the Latin Hypercube Sampling to the Manning range
+# Map the Latin Hypercube Sampling to the bathymetric error range
 bath_error_samples = bath_error_min + lhs_samples * (bath_error_max - bath_error_min)
 
-# Format Manning values to four decimal places and convert to strings
+# Format bathymetric error values to two decimal places and convert to strings
 bath_error_samples_formatted = [float(format(error, '.2f')) for error in bath_error_samples.flatten()]
 
 # Print as array

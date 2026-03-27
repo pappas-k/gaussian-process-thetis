@@ -32,7 +32,7 @@ if __name__ == "__main__":
     locations, names = get_detectors(mesh2d)
     if mesh2d.comm.rank == 0: # only processor
 
-        PETSc.Sys.Print("Found detectors: {}".format(names))    #af
+        PETSc.Sys.Print("Found detectors: {}".format(names))
         import shapely.geometry
         import fiona
         import fiona.crs
@@ -44,4 +44,4 @@ if __name__ == "__main__":
         with fiona.collection("data/detectors.shp", "w", "ESRI Shapefile", schema, crs=crs) as output:
             for xy, name in zip(locations, names):
                 point = shapely.geometry.Point(xy[0], xy[1])
-                PETSc.Sys.Print({'properties': {'name': name}, 'geometry': shapely.geometry.mapping(point)})    #af
+                PETSc.Sys.Print({'properties': {'name': name}, 'geometry': shapely.geometry.mapping(point)})

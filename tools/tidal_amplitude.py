@@ -1,6 +1,6 @@
 import datetime
 
-import numpy
+import numpy as np
 import scipy.interpolate
 import uptide
 import uptide.tidal_netcdf
@@ -20,7 +20,7 @@ def get_lowest_astronomical_tide(elev):
   mesh2d = elev.function_space().mesh()
   xvector = mesh2d.coordinates.dat.data
   evector = elev.dat.data
-  data = numpy.loadtxt('inputs/lat.txt')
+  data = np.loadtxt('inputs/lat.txt')
 
   intp = scipy.interpolate.NearestNDInterpolator(data[:,0:2], data[:,2])
   for i,xy in enumerate(xvector):
