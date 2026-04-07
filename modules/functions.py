@@ -3,6 +3,10 @@ import numpy as np
 import datetime
 import pandas as pd
 
+# Physical constants
+RHO  = 1021   # seawater density (kg/m³)
+GRAV = 9.81   # gravitational acceleration (m/s²)
+
 
 def extract_signal_from_recordings(tidegauge_file, start_date, end_date, plot=False):
     """
@@ -257,9 +261,7 @@ def theoretical_energy(signal):
     float
         Total theoretical tidal energy in kWh.
     """
-    rho = 1021   # seawater density, kg/m³
-    grav = 9.81  # gravitational acceleration, m/s²
-    emax = 0.5 * rho * grav * np.square(_get_tidal_ranges(signal)) / 3.6e6
+    emax = 0.5 * RHO * GRAV * np.square(_get_tidal_ranges(signal)) / 3.6e6
     return np.sum(emax)
 
 
@@ -279,10 +281,8 @@ def mean_tidal_range_and_theoretical_energy(signal):
     E : float
         Total theoretical tidal energy (MWh).
     """
-    rho = 1021   # seawater density, kg/m³
-    grav = 9.81  # gravitational acceleration, m/s²
     tidal_ranges = _get_tidal_ranges(signal)
-    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
+    emax = 0.5 * RHO * GRAV * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
     E = np.sum(emax) / 1e3  # MWh/m²
     R = np.mean(tidal_ranges)
     return R, E
