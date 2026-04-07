@@ -224,8 +224,8 @@ def main():
         # During the ramp epoch_t ∈ [-ramptime, 0]; the tidal forcing
         # module uses this to look up constituent amplitudes and phases.
         epoch_t = t + t_start
-        # Progress expressed as a fraction of the full ramp window.
-        completion = 100.0 + epoch_t / ramptime * 100.0
+        # Ramp completion percentage
+        completion = t / ramptime * 100.0
         intermediate_steps(float(epoch_t))
         PETSc.Sys.Print(
             f"Updating tidal field at t={epoch_t:.0f} — "
