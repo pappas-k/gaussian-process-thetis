@@ -66,7 +66,7 @@ def main():
     wd_alpha = i_alpha          # wetting-and-drying smoothing parameter (m)
 
     lat_coriolis = i_lat_cor    # reference latitude for Coriolis (degrees N)
-    CG_2d = FunctionSpace(mesh2d, 'CG', 1)
+    P1_2d = FunctionSpace(mesh2d, 'CG', 1)
     # Build a spatially varying Coriolis field from a beta-plane approximation
     # centred on lat_coriolis.
     coriolis_2d = tools.thetis_support_scripts.coriolis(mesh2d, lat_coriolis)
@@ -175,7 +175,7 @@ def main():
     # Elevation is set to zero (flat sea surface).
     # A small non-zero velocity (1 mm/s) is used to avoid a degenerate
     # zero-velocity initial state which can slow SNES convergence.
-    elev_init = Function(CG_2d).assign(0.0)
+    elev_init = Function(P1_2d).assign(0.0)
     solver_obj.assign_initial_conditions(uv=as_vector((1e-3, 0.0)), elev=elev_init)
 
     uv, elev = solver_obj.timestepper.solution.subfunctions
@@ -191,7 +191,7 @@ def main():
         if incl_harmonic_analysis and t % ramp_exp_interval == 0:
             PETSc.Sys.Print("Exporting elevation field for harmonic analysis")
             # Project DG elevation onto CG space for cleaner interpolation
-            elev_CG = Function(CG_2d, name='elev_CG').project(elev)
+            elev_CG = Function(P1_2d, name='elev_CG').project(elev)
             with CheckpointFile(os.path.join(outputdir, f'elev_{t}.h5'), 'w') as cf:
                 cf.save_function(elev_CG)
 

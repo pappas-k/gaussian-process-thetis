@@ -153,7 +153,7 @@ def main():
     PETSc.Sys.Print(f"Bathymetric error = {inputs.bath_error} m")
 
     bath = None
-    for _, (f, source, datum) in enumerate(inputs.bathymetries):
+    for f, source, datum in inputs.bathymetries:
         bath = bathymetry.get_bathymetry(
             f, mesh, source=source, bathymetry_function=bath,
             bathy_name="", h=inputs.bath_error,

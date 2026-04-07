@@ -45,10 +45,8 @@ def gaussian_patch_ridge_x(fnsp, x, y, y0, peak, std, base, xmin, xmax):
     assert xmin < xmax, f"Coordinate {xmin} must be smaller than {xmax}."
     assert base < peak, f"Base level must be lower than peak."
     field = Function(fnsp, name="gauss").assign(0.)
-    scale = (peak - base) * (std * sqrt(2*np.pi))
-    spread = std * sqrt(2*np.pi)
     norm = exp(-0.5*(((y - y0) / std)**2))
-    field.interpolate(base + scale * norm / spread)
+    field.interpolate(base + (peak - base) * norm)
     field.interpolate(conditional(And(ge(x, xmin), le(x, xmax)), field, base) )
     return field
 
@@ -83,16 +81,12 @@ def gaussian_hump(fnsp, x, y, x0, y0, ang, peak, sd1, sd2, base=0, r1=None, r2=N
     assert base < peak, f"Base level must be lower than peak."
     field = Function(fnsp).assign(0.)
     if ang == 0 and sd2 == np.inf:  # ridge along y-direction
-        scale = (peak - base) * (sd1 * sqrt(2*np.pi))
-        spread = sd1 * sqrt(2*np.pi)
         norm = exp(-0.5*(((x - x0) / sd1)**2))
-        field.interpolate(base + scale * norm / spread)
+        field.interpolate(base + (peak - base) * norm)
         field.interpolate(conditional(And(ge(y, y0-r2), le(y, y0+r2)), field, base) )
     elif ang == 90 and sd1 == np.inf:  # ridge along x-direction
-        scale = (peak - base) * (sd2 * sqrt(2*np.pi))
-        spread = sd2 * sqrt(2*np.pi)
         norm = exp(-0.5*(((y - y0) / sd2)**2))
-        field.interpolate(base + scale * norm / spread)
+        field.interpolate(base + (peak - base) * norm)
         field.interpolate(conditional(And(ge(x, x0-r1), le(x, x0+r1)), field, base) )
     else:   # finite-extent hump
         x -= x0
@@ -102,11 +96,8 @@ def gaussian_hump(fnsp, x, y, x0, y0, ang, peak, sd1, sd2, base=0, r1=None, r2=N
         y_ = -x*np.sin(ang_rad) + y*np.cos(ang_rad)
         x_ += x0
         y_ += y0
-        sd = np.sqrt(sd1*sd1 + sd2*sd2)
-        scale = (peak - base) * (sd * sqrt(2*np.pi))
-        spread = sd * sqrt(2*np.pi)
         norm = exp(-(((x_ - x0) / 2 / sd1)**2) - (((y_ - y0) / 2 / sd2)**2))
-        field.interpolate(base + scale * norm / spread)
+        field.interpolate(base + (peak - base) * norm)
         field.interpolate(conditional(And(ge(x_, x0-r1), le(x_, x0+r1)), field, base) )
         field.interpolate(conditional(And(ge(y_, y0-r2), le(y_, y0+r2)), field, base) )
 
@@ -144,10 +135,10 @@ def eik(fnsp, bnd_code, tol=1E-4, outfilename=None):
     u = Function(fnsp)
     v = TestFunction(fnsp)
     L = inputs.i_L
-    if type(bnd_code) is int:
+    if isinstance(bnd_code, int):
         bc = [DirichletBC(fnsp, 0.0, bnd_code)]
-    elif type(bnd_code) is list:
-        bc = [DirichletBC(fnsp, 0.0, i) for i in bnd_code]  # boundary conditions
+    else:
+        bc = [DirichletBC(fnsp, 0.0, i) for i in bnd_code]
 
     solver_parameters = {
         'snes_type': 'ksponly',

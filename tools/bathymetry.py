@@ -78,10 +78,8 @@ def get_manning_class(class_file, mesh2d, manning_function, default=6,):
     for a, xy in enumerate(xvector):
         lat, lon = utm.to_latlon(xy[0], xy[1], utm_zone, utm_band)
         try:
-            if interpolator((lat, lon)) >= 1:
-                bvector[a] = manning_function(interpolator((lat, lon))-1)
-            elif interpolator((lat, lon)) < 1:
-                bvector[a] = manning_function(default)
+            val = float(interpolator((lat, lon)))
+            bvector[a] = manning_function(val - 1 if val >= 1 else default)
         except ValueError:
             bvector[a] = manning_function(default)
     return manningclass2d

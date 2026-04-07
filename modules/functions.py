@@ -229,15 +229,18 @@ def tidal_ranges_from_peaks(peak_real_times_HW, peak_real_times_LW,
     return tidal_ranges_all, rel_times_all
 
 
+def _get_tidal_ranges(signal):
+    """Return tidal ranges for a [time, elevation] signal array."""
+    rel_time, tide_elevs = signal[:, 0], signal[:, 1]
+    hw_t, hw_e = find_tidal_peaks(rel_time, tide_elevs, peak_type='HW')
+    lw_t, lw_e = find_tidal_peaks(rel_time, tide_elevs, peak_type='LW')
+    tidal_ranges, _ = tidal_ranges_from_peaks(hw_t, lw_t, hw_e, lw_e)
+    return tidal_ranges
+
+
 def ranges(signal):
     """Return list of tidal ranges for a [time, elevation] signal array."""
-    rel_time, tide_elevs = signal[:, 0], signal[:, 1]
-    peak_rel_times_HW, peak_elevs_HW = find_tidal_peaks(rel_time, tide_elevs, peak_type='HW')
-    peak_rel_times_LW, peak_elevs_LW = find_tidal_peaks(rel_time, tide_elevs, peak_type='LW')
-    tidal_ranges, _ = tidal_ranges_from_peaks(
-        peak_rel_times_HW, peak_rel_times_LW, peak_elevs_HW, peak_elevs_LW
-    )
-    return tidal_ranges
+    return _get_tidal_ranges(signal)
 
 
 def theoretical_energy(signal):
@@ -256,15 +259,7 @@ def theoretical_energy(signal):
     """
     rho = 1021   # seawater density, kg/m³
     grav = 9.81  # gravitational acceleration, m/s²
-
-    rel_time, tide_elevs = signal[:, 0], signal[:, 1]
-    peak_rel_times_HW, peak_elevs_HW = find_tidal_peaks(rel_time, tide_elevs, peak_type='HW')
-    peak_rel_times_LW, peak_elevs_LW = find_tidal_peaks(rel_time, tide_elevs, peak_type='LW')
-    tidal_ranges, _ = tidal_ranges_from_peaks(
-        peak_rel_times_HW, peak_rel_times_LW, peak_elevs_HW, peak_elevs_LW
-    )
-
-    emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
+    emax = 0.5 * rho * grav * np.square(_get_tidal_ranges(signal)) / 3.6e6
     return np.sum(emax)
 
 
@@ -286,16 +281,8 @@ def mean_tidal_range_and_theoretical_energy(signal):
     """
     rho = 1021   # seawater density, kg/m³
     grav = 9.81  # gravitational acceleration, m/s²
-
-    rel_time, tide_elevs = signal[:, 0], signal[:, 1]
-    peak_rel_times_HW, peak_elevs_HW = find_tidal_peaks(rel_time, tide_elevs, peak_type='HW')
-    peak_rel_times_LW, peak_elevs_LW = find_tidal_peaks(rel_time, tide_elevs, peak_type='LW')
-    tidal_ranges, _ = tidal_ranges_from_peaks(
-        peak_rel_times_HW, peak_rel_times_LW, peak_elevs_HW, peak_elevs_LW
-    )
-
+    tidal_ranges = _get_tidal_ranges(signal)
     emax = 0.5 * rho * grav * np.square(tidal_ranges) / 3.6e6  # kWh/m² per tidal cycle
     E = np.sum(emax) / 1e3  # MWh/m²
     R = np.mean(tidal_ranges)
-
     return R, E
