@@ -18,6 +18,7 @@ manning
 """
 import argparse
 import csv
+import os
 import sys
 
 import h5py
@@ -234,7 +235,7 @@ def run_manning_mode(results_file, baseline):
     is used here because the Manning sensitivity analysis targets a single
     representative site in the outer Bristol Channel.
     """
-    if not __import__('os').path.isfile(results_file):
+    if not os.path.isfile(results_file):
         print(f"ERROR: results file not found: {results_file}", file=sys.stderr)
         sys.exit(1)
 
