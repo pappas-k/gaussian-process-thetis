@@ -4,7 +4,7 @@ from thetis import *
 from tools import utm
 
 
-def coriolis(mesh, lat,):
+def coriolis(mesh, lat):
     """
     Adds coriolis term based on latitude (simplistic formulation but sufficient in regional models)
     :param mesh: Mesh
